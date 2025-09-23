@@ -1,0 +1,48 @@
+
+📌 Deskripsi Arsitektur Aplikasi di Kubernetes
+
+Aplikasi ini dibangun dengan frontend React.js, backend Go API, dan database PostgreSQL, serta didukung oleh komponen tambahan untuk caching, keamanan, dan observability. Seluruh stack menggunakan teknologi open-source agar tetap fleksibel, transparan, dan bebas vendor lock-in.
+
+ 1. Akses Pengguna
+
+Pengguna mengakses aplikasi melalui browser. Setiap permintaan (request) pertama-tama melewati Load Balancer yang bertugas mendistribusikan traffic ke dalam cluster Kubernetes. Selanjutnya, traffic diarahkan ke Ingress Controller (misalnya NGINX Ingress atau Traefik), yang berfungsi sebagai pintu masuk utama dan pengatur routing HTTP/HTTPS.
+
+ 2. Frontend (React.js)
+
+Setelah melewati Ingress, traffic ke aplikasi pengguna (UI) diteruskan ke Frontend Pods yang menjalankan React.js. Pod ini dikelola oleh Kubernetes Deployment, sehingga bisa memiliki banyak replika agar tetap tersedia (High Availability) dan bisa diskalakan (Scalable) menggunakan Horizontal Pod Autoscaler (HPA).
+
+ 3. Backend (Go API)
+
+Untuk request yang membutuhkan logika bisnis atau akses data, Ingress akan mengarahkan traffic ke Backend Pods yang menjalankan API berbasis Go. Sama seperti frontend, backend juga berjalan di Deployment dengan banyak replika dan dapat diskalakan otomatis sesuai beban traffic. Backend berfungsi sebagai penghubung antara frontend dan sistem penyimpanan data.
+
+ 4. Database (PostgreSQL)
+
+Backend berkomunikasi dengan PostgreSQL yang dikelola menggunakan StatefulSet di Kubernetes. StatefulSet dipilih karena database membutuhkan identitas pod yang konsisten dan penyimpanan persisten. Penyimpanan data dikelola dengan PersistentVolume (PV) dan PersistentVolumeClaim (PVC) agar data tetap aman meskipun pod diganti atau dipindahkan. Untuk meningkatkan performa, database dapat diperluas dengan konfigurasi replication (master-replica).
+
+ 5. Caching Layer (Redis)
+
+Agar lebih scalable, tersedia Redis Cache sebagai lapisan caching opsional. Redis membantu menyimpan data sementara (misalnya session atau query yang sering dipakai) untuk mengurangi beban langsung ke database PostgreSQL dan meningkatkan kecepatan respon.
+
+ 6. Security Layer
+
+Keamanan aplikasi dijaga melalui beberapa mekanisme:
+
+- RBAC (Role-Based Access Control) untuk mengatur hak akses pengguna dan service account.
+- TLS/HTTPS diaktifkan pada Ingress menggunakan Cert-Manager dengan sertifikat dari Let’s Encrypt.
+- Network Policies untuk membatasi komunikasi antar pod hanya pada jalur yang diizinkan.
+- Kubernetes Secrets untuk menyimpan data sensitif seperti password database dan API keys.
+
+ 7. Observability
+
+Untuk memastikan aplikasi dapat dipantau dan dikelola dengan baik, digunakan stack observability berbasis open-source:
+
+- Prometheus untuk mengumpulkan metrics.
+- Grafana untuk visualisasi dashboard performa.
+- Loki untuk manajemen log aplikasi.
+- Alertmanager untuk mengirim notifikasi jika terjadi masalah (misalnya pod down, CPU tinggi, database lambat).
+
+ 8. High Availability & Scalability
+
+- High Availability dicapai dengan menjalankan banyak replika pod pada node yang berbeda, sehingga aplikasi tetap berjalan meskipun salah satu pod atau node gagal.
+- Scalability dicapai dengan Horizontal Pod Autoscaler (HPA) yang secara otomatis menambah atau mengurangi jumlah pod sesuai kebutuhan. Bila resource node habis, Cluster Autoscaler dapat menambah node baru ke dalam cluster.
+
