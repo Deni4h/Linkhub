@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: denidkr24/go-backend
-  tag: 1
+  tag: 2
   pullPolicy: IfNotPresent
 
 service:

@@ -22,6 +22,14 @@ func main() {
 		fmt.Fprintf(w, "Hello, %s!", name)
 	})
 
+	http.HandleFunc("/testing", func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			name = "testing"
+		}
+		fmt.Fprintf(w, "ini : , %s!", name)
+	})
+
 	http.HandleFunc("/health/live", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("alive"))
